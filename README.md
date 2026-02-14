@@ -19,19 +19,6 @@ A full-stack weekly meal planner web app built with Next.js, PostgreSQL, and Pri
 - Zod validation
 - bcryptjs for password hashing
 
-## Branch Structure
-
-| Branch | Description |
-|--------|-------------|
-| `main` | Production-ready code |
-| `feature/foundation` | Project scaffold, auth, layouts |
-| `feature/recipe-book` | Recipe CRUD with structured ingredients |
-| `feature/meal-planner` | Weekly meal planner board |
-| `feature/grocery-list` | Grocery list with ingredient aggregation |
-| `feature/collaboration` | Invitations and shared plans |
-| `feature/meal-suggestions` | Member suggestion workflow |
-| `feature/shared-grocery` | Shared grocery list for members |
-
 ## Getting Started
 
 ```bash

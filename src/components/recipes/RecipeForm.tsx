@@ -2,8 +2,14 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import dynamic from "next/dynamic"
 import IngredientInput from "./IngredientInput"
 import type { IngredientInput as IngredientType } from "@/lib/validators/recipe"
+
+const RichTextEditor = dynamic(() => import("@/components/editor/RichTextEditor"), {
+  ssr: false,
+  loading: () => <div className="h-64 rounded-md border border-gray-300 bg-gray-50 animate-pulse" />,
+})
 
 interface Props {
   initialData?: {
@@ -23,8 +29,7 @@ export default function RecipeForm({ initialData, recipeId }: Props) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [title, setTitle] = useState(initialData?.title || "")
-  const [description, setDescription] = useState(initialData?.description || "")
-  const [instructions, setInstructions] = useState(initialData?.instructions || "")
+  const [content, setContent] = useState(initialData?.instructions || "")
   const [servings, setServings] = useState(initialData?.servings || 4)
   const [prepTime, setPrepTime] = useState(initialData?.prepTime || 0)
   const [cookTime, setCookTime] = useState(initialData?.cookTime || 0)
@@ -32,15 +37,24 @@ export default function RecipeForm({ initialData, recipeId }: Props) {
     initialData?.ingredients || [{ name: "", quantity: 1, unit: "whole" }]
   )
 
+  function stripHtml(html: string): string {
+    const div = document.createElement("div")
+    div.innerHTML = html
+    return div.textContent || div.innerText || ""
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError("")
 
+    const plainText = stripHtml(content)
+    const description = plainText.slice(0, 200) || undefined
+
     const body = {
       title,
-      description: description || undefined,
-      instructions: instructions || undefined,
+      description,
+      instructions: content || undefined,
       servings,
       prepTime: prepTime || undefined,
       cookTime: cookTime || undefined,
@@ -69,7 +83,7 @@ export default function RecipeForm({ initialData, recipeId }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
+    <form onSubmit={handleSubmit} className="space-y-6 max-w-3xl">
       {error && <p className="text-sm text-red-600 bg-red-50 p-3 rounded">{error}</p>}
 
       <div>
@@ -79,26 +93,6 @@ export default function RecipeForm({ initialData, recipeId }: Props) {
           required
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Description</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Instructions</label>
-        <textarea
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          rows={6}
           className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
       </div>
@@ -137,6 +131,20 @@ export default function RecipeForm({ initialData, recipeId }: Props) {
       </div>
 
       <IngredientInput ingredients={ingredients} onChange={setIngredients} />
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Preparation Notes
+        </label>
+        <p className="text-xs text-gray-400 mb-2">
+          Use the toolbar for formatting. Insert icon tags and #sections for Description, Servings, PrepTime, CookTime, or Ingredients.
+        </p>
+        <RichTextEditor
+          content={content}
+          onChange={setContent}
+          placeholder="Write your recipe preparation notes here... Use # for sections and icon tags for visual markers."
+        />
+      </div>
 
       <div className="flex gap-4">
         <button

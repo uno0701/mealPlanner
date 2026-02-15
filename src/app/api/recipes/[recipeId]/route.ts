@@ -90,6 +90,44 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ recipeId: string }> }
+) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { recipeId } = await params
+
+  const existing = await prisma.recipe.findUnique({
+    where: { id: recipeId, userId: session.user.id },
+  })
+
+  if (!existing) {
+    return NextResponse.json({ error: "Recipe not found" }, { status: 404 })
+  }
+
+  const body = await request.json()
+  const { instructions } = body
+
+  const recipe = await prisma.recipe.update({
+    where: { id: recipeId },
+    data: {
+      instructions,
+      description: instructions
+        ? (() => {
+            const text = instructions.replace(/<[^>]*>/g, "")
+            return text.slice(0, 200)
+          })()
+        : existing.description,
+    },
+  })
+
+  return NextResponse.json(recipe)
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ recipeId: string }> }

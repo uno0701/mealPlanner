@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import Link from "next/link"
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import RecipeDetailClient from "@/components/recipes/RecipeDetailClient"
 
 export default async function RecipeDetailPage({
   params,
@@ -21,7 +22,7 @@ export default async function RecipeDetailPage({
   if (!recipe) notFound()
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">{recipe.title}</h1>
         <div className="flex gap-2">
@@ -40,10 +41,6 @@ export default async function RecipeDetailPage({
         </div>
       </div>
 
-      {recipe.description && (
-        <p className="text-gray-600 mb-4">{recipe.description}</p>
-      )}
-
       <div className="flex gap-6 text-sm text-gray-500 mb-6">
         <span>{recipe.servings} servings</span>
         {recipe.prepTime && <span>Prep: {recipe.prepTime} min</span>}
@@ -60,14 +57,11 @@ export default async function RecipeDetailPage({
         ))}
       </ul>
 
-      {recipe.instructions && (
-        <>
-          <h2 className="text-lg font-semibold mb-3">Instructions</h2>
-          <div className="prose prose-sm text-gray-700 whitespace-pre-wrap">
-            {recipe.instructions}
-          </div>
-        </>
-      )}
+      <h2 className="text-lg font-semibold mb-3">Preparation</h2>
+      <RecipeDetailClient
+        content={recipe.instructions || ""}
+        recipeId={recipe.id}
+      />
     </div>
   )
 }

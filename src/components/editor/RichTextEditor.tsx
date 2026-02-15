@@ -1,14 +1,18 @@
 "use client"
 
+import { useEffect } from "react"
 import { useEditor, EditorContent } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Underline from "@tiptap/extension-underline"
 import { TextStyle, FontFamily, Color } from "@tiptap/extension-text-style"
 import Placeholder from "@tiptap/extension-placeholder"
+import TaskList from "@tiptap/extension-task-list"
+import TaskItem from "@tiptap/extension-task-item"
 import { FontSize } from "./FontSizeExtension"
 import EditorToolbar from "./EditorToolbar"
 import type { CookingIcon } from "@/lib/icons"
 import { getTagSettings } from "@/lib/tag-settings"
+import { getEditorSettings } from "@/lib/editor-settings"
 
 interface Props {
   content: string
@@ -30,6 +34,8 @@ export default function RichTextEditor({ content, onChange, placeholder }: Props
       FontFamily,
       FontSize,
       Color,
+      TaskList,
+      TaskItem.configure({ nested: true }),
       Placeholder.configure({ placeholder: placeholder || "Start writing your recipe..." }),
     ],
     content,
@@ -38,10 +44,25 @@ export default function RichTextEditor({ content, onChange, placeholder }: Props
     },
     editorProps: {
       attributes: {
-        class: "prose prose-sm max-w-none min-h-[200px] px-4 py-3 focus:outline-none",
+        class: "prose prose-sm max-w-none min-h-[400px] px-8 py-6 focus:outline-none",
       },
     },
   })
+
+  // Apply saved font settings on mount
+  useEffect(() => {
+    if (!editor) return
+    const settings = getEditorSettings()
+    if (settings.fontFamily) {
+      editor.chain().selectAll().setFontFamily(settings.fontFamily).run()
+      editor.commands.focus("end")
+    }
+    if (settings.fontSize) {
+      editor.chain().selectAll().setFontSize(settings.fontSize).run()
+      editor.commands.focus("end")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor])
 
   function handleInsertTag(icon: CookingIcon) {
     if (!editor) return
@@ -57,7 +78,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: Props
   }
 
   return (
-    <div className="rounded-md border border-gray-300 overflow-hidden">
+    <div className="rounded-md bg-white shadow-sm overflow-hidden">
       <EditorToolbar
         editor={editor}
         onInsertTag={handleInsertTag}

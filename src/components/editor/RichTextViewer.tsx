@@ -69,6 +69,20 @@ export default function RichTextViewer({ content, onClick }: Props) {
                 fill: currentColor;
                 flex-shrink: 0;
               }
+              .recipe-viewer ul[data-type="taskList"] {
+                list-style: none;
+                padding-left: 0;
+              }
+              .recipe-viewer ul[data-type="taskList"] li {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+                margin: 4px 0;
+              }
+              .recipe-viewer li[data-checked="true"] > div {
+                text-decoration: line-through;
+                color: #9ca3af;
+              }
             `,
           }}
         />

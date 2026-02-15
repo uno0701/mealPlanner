@@ -20,6 +20,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: Props
   const tagSettings = getTagSettings()
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({
         bulletList: { keepMarks: true, keepAttributes: false },
